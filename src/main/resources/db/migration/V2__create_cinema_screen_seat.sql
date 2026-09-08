@@ -1,0 +1,36 @@
+CREATE TABLE cinemas (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(150) NOT NULL,
+    address TEXT NOT NULL,
+    city VARCHAR(100) NOT NULL,
+    phone VARCHAR(30),
+    image_url TEXT,
+    active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+ALTER TABLE users
+    ADD CONSTRAINT fk_users_cinema FOREIGN KEY (cinema_id) REFERENCES cinemas(id);
+
+CREATE TABLE screens (
+    id BIGSERIAL PRIMARY KEY,
+    cinema_id BIGINT NOT NULL REFERENCES cinemas(id),
+    name VARCHAR(100) NOT NULL,
+    active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uk_screens_cinema_name UNIQUE (cinema_id, name)
+);
+
+CREATE TABLE seats (
+    id BIGSERIAL PRIMARY KEY,
+    screen_id BIGINT NOT NULL REFERENCES screens(id),
+    row_name VARCHAR(10) NOT NULL,
+    seat_number INTEGER NOT NULL,
+    seat_type VARCHAR(20) NOT NULL,
+    active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uk_seats_screen_row_number UNIQUE (screen_id, row_name, seat_number)
+);

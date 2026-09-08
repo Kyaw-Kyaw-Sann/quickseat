@@ -1,0 +1,22 @@
+CREATE TABLE payments (
+    id BIGSERIAL PRIMARY KEY,
+    booking_id BIGINT NOT NULL UNIQUE REFERENCES bookings(id),
+    payment_reference VARCHAR(50) NOT NULL UNIQUE,
+    status VARCHAR(20) NOT NULL,
+    amount NUMERIC(12, 2) NOT NULL,
+    paid_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE tickets (
+    id BIGSERIAL PRIMARY KEY,
+    booking_id BIGINT NOT NULL UNIQUE REFERENCES bookings(id),
+    ticket_token VARCHAR(255) NOT NULL UNIQUE,
+    qr_image_url TEXT,
+    status VARCHAR(20) NOT NULL,
+    used_at TIMESTAMPTZ,
+    verified_by BIGINT REFERENCES users(id),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
