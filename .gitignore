@@ -1,6 +1,21 @@
-HELP.md
+# Environment secrets
 .env
+.env.*
+!.env.example
+
+# Local Spring Boot configuration
+application-local.properties
+application-dev-local.properties
+application-prod.properties
+
+# Logs
+*.log
+logs/
+
+# Generated files
+HELP.md
 target/
+out/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
@@ -32,3 +47,8 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Operating system files ###
+.DS_Store
+Thumbs.db
+

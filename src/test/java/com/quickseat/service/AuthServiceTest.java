@@ -27,9 +27,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
     @Mock private UserRepository userRepository;
+    @Mock private EmailVerificationService emailVerificationService;
     private AuthService authService;
     private BCryptPasswordEncoder passwordEncoder;
-    @BeforeEach void setUp() { passwordEncoder = new BCryptPasswordEncoder(); authService = new AuthService(userRepository, passwordEncoder, new JwtService("test-secret-that-is-longer-than-thirty-two-characters", 15, 7), new RevokedTokenService()); }
+    @BeforeEach void setUp() { passwordEncoder = new BCryptPasswordEncoder(); authService = new AuthService(userRepository, passwordEncoder, new JwtService("test-secret-that-is-longer-than-thirty-two-characters", 15, 7), new RevokedTokenService(), emailVerificationService); }
     @Test void registerHashesPasswordAndReturnsTokens() {
         when(userRepository.existsByEmail("customer@example.com")).thenReturn(false);
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> { User user = invocation.getArgument(0); user.setId(1L); return user; });
