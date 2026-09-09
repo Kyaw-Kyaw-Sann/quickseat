@@ -1,7 +1,7 @@
 package com.quickseat.security;
 
 import com.quickseat.exception.UnauthorizedException;
-import com.quickseat.entity.Role;
+import com.quickseat.entity.enums.Role;
 import com.quickseat.entity.User;
 import com.quickseat.exception.ForbiddenException;
 import com.quickseat.repository.UserRepository;

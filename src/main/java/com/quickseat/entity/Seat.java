@@ -1,5 +1,7 @@
 package com.quickseat.entity;
 
+import com.quickseat.entity.enums.SeatType;
+
 import jakarta.persistence.*;
 import java.time.Instant;
 import lombok.Getter;
