@@ -21,12 +21,15 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthService {
     private final UserRepository userRepository; private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService; private final RevokedTokenService revokedTokenService;
+    private final EmailVerificationService emailVerificationService;
     @Transactional public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.email().trim().toLowerCase())) throw new ConflictException("Email is already registered");
         User user = new User(); user.setName(request.name().trim()); user.setEmail(request.email().trim().toLowerCase());
         user.setPassword(passwordEncoder.encode(request.password())); user.setPhone(request.phone()); user.setRole(Role.CUSTOMER);
         user.setProvider(AuthProvider.LOCAL); user.setActive(true); user.setEmailVerified(false);
-        return tokens(userRepository.save(user));
+        User savedUser = userRepository.save(user);
+        emailVerificationService.createAndSend(savedUser);
+        return tokens(savedUser);
     }
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.email().trim().toLowerCase()).orElseThrow(() -> new UnauthorizedException("Invalid email or password"));
@@ -45,4 +48,22 @@ public class AuthService {
         catch (JwtException | IllegalArgumentException exception) { throw new UnauthorizedException("Invalid refresh token"); }
     }
     private AuthResponse tokens(User user) { AppUserDetails principal = AppUserDetails.from(user); return new AuthResponse(user.getId(), user.getName(), user.getEmail(), user.getRole().name(), jwtService.createAccessToken(principal), jwtService.createRefreshToken(principal), "Bearer"); }
+
+    @Transactional
+    public AuthResponse loginWithGoogle(String email, String name) {
+        String normalizedEmail = email.trim().toLowerCase();
+        User user = userRepository.findByEmail(normalizedEmail).orElseGet(() -> {
+            User newUser = new User();
+            newUser.setEmail(normalizedEmail);
+            newUser.setName(name == null || name.isBlank() ? normalizedEmail : name);
+            newUser.setRole(Role.CUSTOMER);
+            newUser.setProvider(AuthProvider.GOOGLE);
+            newUser.setEmailVerified(true);
+            newUser.setActive(true);
+            return userRepository.save(newUser);
+        });
+        if (!user.isActive()) throw new UnauthorizedException("This account is disabled");
+        if (user.getProvider() != AuthProvider.GOOGLE) throw new ConflictException("Email is registered with local login");
+        return tokens(user);
+    }
 }
