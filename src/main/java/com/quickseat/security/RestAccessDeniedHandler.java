@@ -1,7 +1,7 @@
 package com.quickseat.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.quickseat.dto.ApiResponse;
+import com.quickseat.dto.common.ApiErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -15,6 +15,8 @@ public class RestAccessDeniedHandler implements AccessDeniedHandler {
     private final ObjectMapper objectMapper = new ObjectMapper();
     @Override public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException exception) throws IOException {
         response.setStatus(HttpServletResponse.SC_FORBIDDEN); response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        objectMapper.writeValue(response.getOutputStream(), ApiResponse.failure("You do not have permission to access this resource"));
+        objectMapper.writeValue(response.getOutputStream(), ApiErrorResponse.of(
+                HttpServletResponse.SC_FORBIDDEN, "FORBIDDEN",
+                "You do not have permission to access this resource", request.getRequestURI()));
     }
 }

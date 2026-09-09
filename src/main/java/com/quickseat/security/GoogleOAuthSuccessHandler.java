@@ -1,9 +1,10 @@
 package com.quickseat.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.quickseat.dto.ApiResponse;
-import com.quickseat.dto.AuthResponse;
-import com.quickseat.service.AuthService;
+import com.quickseat.dto.common.ApiErrorResponse;
+import com.quickseat.dto.common.ApiResponse;
+import com.quickseat.dto.response.auth.AuthResponse;
+import com.quickseat.service.auth.AuthService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -28,7 +29,11 @@ public class GoogleOAuthSuccessHandler implements AuthenticationSuccessHandler {
         String email = oauthUser.getAttribute("email");
         Boolean emailVerified = oauthUser.getAttribute("email_verified");
         if (email == null || !Boolean.TRUE.equals(emailVerified)) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Google email is not verified");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            objectMapper.writeValue(response.getOutputStream(), ApiErrorResponse.of(
+                    HttpServletResponse.SC_UNAUTHORIZED, "UNAUTHORIZED", "Google email is not verified",
+                    request.getRequestURI()));
             return;
         }
         AuthResponse authResponse = authService.loginWithGoogle(email, oauthUser.getAttribute("name"));

@@ -1,5 +1,7 @@
 package com.quickseat.entity;
 
+import com.quickseat.entity.enums.PaymentStatus;
+
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.Instant;

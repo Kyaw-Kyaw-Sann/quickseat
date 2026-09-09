@@ -1,7 +1,7 @@
 package com.quickseat.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.quickseat.dto.ApiResponse;
+import com.quickseat.dto.common.ApiErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -15,6 +15,7 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
     private final ObjectMapper objectMapper = new ObjectMapper();
     @Override public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        objectMapper.writeValue(response.getOutputStream(), ApiResponse.failure("Authentication is required"));
+        objectMapper.writeValue(response.getOutputStream(), ApiErrorResponse.of(
+                HttpServletResponse.SC_UNAUTHORIZED, "UNAUTHORIZED", "Authentication is required", request.getRequestURI()));
     }
 }
