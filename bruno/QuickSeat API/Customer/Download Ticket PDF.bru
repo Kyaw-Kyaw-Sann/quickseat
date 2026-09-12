@@ -1,0 +1,14 @@
+meta {
+  name: Download Ticket PDF
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/customer/tickets/{{ticketToken}}/pdf
+  body: none
+}
+
+headers {
+  Authorization: Bearer {{customerToken}}
+}

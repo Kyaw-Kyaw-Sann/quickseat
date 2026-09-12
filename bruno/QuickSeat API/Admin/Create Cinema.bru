@@ -1,0 +1,25 @@
+meta {
+  name: Create Cinema
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/admin/cinemas
+  body: json
+}
+
+headers {
+  Authorization: Bearer {{adminToken}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "QuickSeat Yangon",
+    "address": "123 Example Road",
+    "city": "Yangon",
+    "phone": "09123456789",
+    "imageUrl": "https://example.com/cinema.jpg"
+  }
+}

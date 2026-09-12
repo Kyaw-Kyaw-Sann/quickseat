@@ -6,7 +6,6 @@
 # Local Spring Boot configuration
 application-local.properties
 application-dev-local.properties
-application-prod.properties
 
 # Logs
 *.log

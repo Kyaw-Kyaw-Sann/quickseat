@@ -1,0 +1,21 @@
+meta {
+  name: Mock Payment Success
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/customer/bookings/{{bookingReference}}/payments
+  body: json
+}
+
+headers {
+  Authorization: Bearer {{customerToken}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "successful": true
+  }
+}

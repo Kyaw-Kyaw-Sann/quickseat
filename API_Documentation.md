@@ -2,6 +2,8 @@
 
 Base URL: `http://localhost:8080/api/v1`
 
+All paths below are relative to this Base URL. Public endpoints do not need a token. Protected endpoints need an access token with the role shown under `Access`.
+
 Protected API များအတွက် header:
 
 ```text
@@ -80,6 +82,35 @@ response
 ```
 
 Cinema image ကို dedicated Cloudinary cinema folder သို့ upload လုပ်ရန်ဖြစ်သည်။ Returned `url` ကို cinema create/update request ၏ `imageUrl` တွင် အသုံးပြုပါ။ Empty, non-image သို့မဟုတ် 5 MB ထက်ကြီးသော file ကို `400` ပြန်ပေးသည်။
+
+---
+
+## Public System Module
+
+### GET /health
+
+Access: Public
+
+request
+
+```text
+/health
+```
+
+response
+
+```json
+{
+  "success": true,
+  "message": "QuickSeat API is running",
+  "data": {
+    "status": "UP",
+    "timestamp": "2026-09-12T08:00:00Z"
+  }
+}
+```
+
+Use this endpoint to confirm that the backend is running and reachable.
 
 ---
 
@@ -432,6 +463,26 @@ response
 ```
 
 Verified OTP ဖြင့် password အသစ်သတ်မှတ်ရန်ဖြစ်သည်။
+
+---
+
+### GET /oauth2/authorization/google
+
+Access: Public (available only when `GOOGLE_OAUTH_ENABLED=true`)
+
+request
+
+```text
+/oauth2/authorization/google
+```
+
+response
+
+```text
+302 redirect to Google sign-in
+```
+
+Starts the Google OAuth sign-in flow. It is a browser redirect endpoint, not a JSON/Bruno request. Google redirects back to the configured callback after consent.
 
 ---
 

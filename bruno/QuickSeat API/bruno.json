@@ -1,0 +1,8 @@
+{
+  "version": "1",
+  "name": "QuickSeat API",
+  "type": "collection",
+  "ignore": [
+    ".env"
+  ]
+}

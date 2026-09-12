@@ -1,0 +1,22 @@
+meta {
+  name: Hold Seats
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/customer/seat-holds
+  body: json
+}
+
+headers {
+  Authorization: Bearer {{customerToken}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "showtimeId": 1,
+    "showtimeSeatIds": [1, 2]
+  }
+}
