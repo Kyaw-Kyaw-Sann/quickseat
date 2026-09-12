@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 @Slf4j
 @RestControllerAdvice
@@ -55,6 +56,13 @@ public class GlobalExceptionHandler {
                 "Missing required parameter: " + exception.getParameterName(), request);
     }
 
+    @ExceptionHandler(MissingServletRequestPartException.class)
+    public ResponseEntity<ApiErrorResponse> handleMissingRequestPart(MissingServletRequestPartException exception,
+                                                                      HttpServletRequest request) {
+        return response(HttpStatus.BAD_REQUEST, "MISSING_REQUEST_PART",
+                "Missing required file part: " + exception.getRequestPartName(), request);
+    }
+
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ApiErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException exception,
                                                                 HttpServletRequest request) {
@@ -64,7 +72,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<ApiErrorResponse> handleMaxUploadSize(HttpServletRequest request) {
-        return response(HttpStatus.PAYLOAD_TOO_LARGE, "FILE_TOO_LARGE",
+        if (request.getRequestURI().endsWith("/admin/cinemas/image")) {
+            return response(HttpStatus.BAD_REQUEST, "FILE_TOO_LARGE",
+                    "Uploaded file must not exceed 5 MB", request);
+        }
+        return response(HttpStatus.PAYLOAD_TOO_LARGE, "PAYLOAD_TOO_LARGE",
                 "Uploaded file must not exceed 5 MB", request);
     }
 

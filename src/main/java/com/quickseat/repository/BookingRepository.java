@@ -26,4 +26,16 @@ public interface BookingRepository extends JpaRepository<Booking, Long>, JpaSpec
             """)
     Optional<Booking> findCustomerBookingForUpdate(@Param("bookingReference") String bookingReference,
                                                     @Param("userId") Long userId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+            select booking from Booking booking
+            join fetch booking.user
+            join fetch booking.showtime showtime
+            join fetch showtime.movie
+            join fetch showtime.screen screen
+            join fetch screen.cinema
+            where booking.bookingReference = :bookingReference
+            """)
+    Optional<Booking> findByBookingReferenceForUpdate(@Param("bookingReference") String bookingReference);
 }

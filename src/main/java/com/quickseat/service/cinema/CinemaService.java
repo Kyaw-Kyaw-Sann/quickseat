@@ -36,7 +36,9 @@ public class CinemaService {
         return toResponse(cinema);
     }
 
-    public CinemaResponse get(Long id) { return toResponse(getEntity(id)); }
+    public CinemaResponse get(Long id) {
+        return toResponse(getEntity(id));
+    }
 
     public Page<CinemaResponse> list(String search, Boolean active, int page, int size) {
         String normalizedSearch = search == null || search.isBlank() ? null : search.trim();
@@ -77,7 +79,8 @@ public class CinemaService {
 
     private CinemaResponse toResponse(Cinema cinema) {
         return new CinemaResponse(cinema.getId(), cinema.getName(), cinema.getAddress(), cinema.getCity(),
-                cinema.getPhone(), cinema.getImageUrl(), cinema.isActive(), cinema.getCreatedAt(), cinema.getUpdatedAt());
+                cinema.getPhone(), cinema.getImageUrl(), cinema.isActive(), cinema.getCreatedAt(),
+                cinema.getUpdatedAt());
     }
 
     private String trimToNull(String value) {
