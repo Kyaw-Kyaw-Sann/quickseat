@@ -24,6 +24,14 @@ public class CloudinaryService {
     private boolean enabled;
 
     public ImageUploadResponse uploadMoviePoster(MultipartFile file) {
+        return uploadImage(file, "quickseat/movies", "movie poster");
+    }
+
+    public ImageUploadResponse uploadCinemaImage(MultipartFile file) {
+        return uploadImage(file, "quickseat/cinemas", "cinema image");
+    }
+
+    private ImageUploadResponse uploadImage(MultipartFile file, String folder, String imageType) {
         validate(file);
         if (!enabled) {
             throw new BadRequestException("Cloudinary upload is not configured");
@@ -31,12 +39,12 @@ public class CloudinaryService {
 
         try {
             Map<?, ?> result = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap(
-                    "folder", "quickseat/movies",
+                    "folder", folder,
                     "resource_type", "image",
                     "unique_filename", true));
             return new ImageUploadResponse(result.get("secure_url").toString(), result.get("public_id").toString());
         } catch (IOException | RuntimeException exception) {
-            log.error("Cloudinary movie poster upload failed", exception);
+            log.error("Cloudinary {} upload failed", imageType, exception);
             throw new BadRequestException("Image upload failed");
         }
     }

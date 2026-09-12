@@ -17,16 +17,19 @@ import com.quickseat.entity.Screen;
 import com.quickseat.entity.Seat;
 import com.quickseat.entity.Showtime;
 import com.quickseat.entity.ShowtimeSeat;
+import com.quickseat.entity.Ticket;
 import com.quickseat.entity.User;
 import com.quickseat.entity.enums.BookingStatus;
 import com.quickseat.entity.enums.SeatInventoryStatus;
 import com.quickseat.entity.enums.SeatType;
+import com.quickseat.entity.enums.TicketStatus;
 import com.quickseat.exception.BadRequestException;
 import com.quickseat.exception.ConflictException;
 import com.quickseat.exception.ResourceNotFoundException;
 import com.quickseat.repository.BookingRepository;
 import com.quickseat.repository.BookingSeatRepository;
 import com.quickseat.repository.ShowtimeSeatRepository;
+import com.quickseat.repository.TicketRepository;
 import com.quickseat.security.CurrentUserService;
 import java.math.BigDecimal;
 import java.time.Clock;
@@ -54,6 +57,7 @@ class BookingManagementServiceTest {
     @Mock BookingRepository bookingRepository;
     @Mock BookingSeatRepository bookingSeatRepository;
     @Mock ShowtimeSeatRepository showtimeSeatRepository;
+    @Mock TicketRepository ticketRepository;
     @Mock CurrentUserService currentUserService;
     @Mock SeatHoldService seatHoldService;
 
@@ -66,7 +70,7 @@ class BookingManagementServiceTest {
     @BeforeEach
     void setUp() {
         service = new BookingManagementService(bookingRepository, bookingSeatRepository,
-                showtimeSeatRepository, currentUserService, seatHoldService,
+                showtimeSeatRepository, ticketRepository, currentUserService, seatHoldService,
                 Clock.fixed(NOW, ZoneOffset.UTC));
 
         customer = new User();
@@ -183,13 +187,18 @@ class BookingManagementServiceTest {
         booking.setStatus(BookingStatus.CONFIRMED);
         inventory.setStatus(SeatInventoryStatus.BOOKED);
         inventory.setHeldByBooking(null);
+        Ticket ticket = new Ticket();
+        ticket.setBooking(booking);
+        ticket.setStatus(TicketStatus.ACTIVE);
         mockOwnedBooking();
         when(showtimeSeatRepository.findBookingSeatsForUpdate(4L, List.of(6L)))
                 .thenReturn(List.of(inventory));
+        when(ticketRepository.findByBookingId(5L)).thenReturn(Optional.of(ticket));
 
         var result = service.cancel("QS-BOOKING");
 
         assertThat(result.status()).isEqualTo(BookingStatus.CANCELLED);
+        assertThat(ticket.getStatus()).isEqualTo(TicketStatus.CANCELLED);
         verify(seatHoldService).releaseInventorySeat(inventory);
     }
 

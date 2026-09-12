@@ -4,15 +4,19 @@ import com.quickseat.dto.common.ApiResponse;
 import com.quickseat.dto.request.cinema.CinemaRequest;
 import com.quickseat.dto.request.common.ActiveStatusRequest;
 import com.quickseat.dto.response.cinema.CinemaResponse;
+import com.quickseat.dto.response.movie.ImageUploadResponse;
 import com.quickseat.service.cinema.CinemaService;
+import com.quickseat.service.shared.CloudinaryService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/admin/cinemas")
@@ -20,6 +24,12 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 public class AdminCinemaController {
     private final CinemaService cinemaService;
+    private final CloudinaryService cloudinaryService;
+
+    @PostMapping(value = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<ImageUploadResponse> uploadImage(@RequestPart("file") MultipartFile file) {
+        return ApiResponse.success("Cinema image uploaded successfully", cloudinaryService.uploadCinemaImage(file));
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)

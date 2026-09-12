@@ -250,7 +250,7 @@ public class SeatHoldService {
         heldSeats.forEach(this::releaseInventorySeat);
     }
 
-    boolean expirePendingBookingIfNeeded(Booking booking, Instant now) {
+    public boolean expirePendingBookingIfNeeded(Booking booking, Instant now) {
         if (!isExpiredPendingBooking(booking, now)) {
             return false;
         }
@@ -260,7 +260,16 @@ public class SeatHoldService {
         return true;
     }
 
-    void releaseInventorySeat(ShowtimeSeat showtimeSeat) {
+    public void expirePendingBooking(Booking booking) {
+        if (booking.getStatus() != BookingStatus.PENDING) {
+            return;
+        }
+        List<ShowtimeSeat> heldSeats = showtimeSeatRepository
+                .findHeldSeatsByBookingIdForUpdate(booking.getId());
+        expireBookingAndRelease(booking, heldSeats);
+    }
+
+    public void releaseInventorySeat(ShowtimeSeat showtimeSeat) {
         showtimeSeat.setStatus(showtimeSeat.getSeat().isActive()
                 ? SeatInventoryStatus.AVAILABLE
                 : SeatInventoryStatus.UNAVAILABLE);

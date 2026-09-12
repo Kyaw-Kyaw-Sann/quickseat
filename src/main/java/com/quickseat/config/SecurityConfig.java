@@ -30,7 +30,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/health", "/swagger-ui/**", "/swagger-ui.html", "/api-docs/**", "/auth/**",
                                 "/movies", "/movies/**", "/oauth2/**", "/login/oauth2/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/showtimes/*/seats").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/cinemas", "/cinemas/**", "/showtimes",
+                                "/showtimes/*/seats").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/staff/**").hasRole("STAFF")
                         .requestMatchers("/customer/**").hasRole("CUSTOMER")

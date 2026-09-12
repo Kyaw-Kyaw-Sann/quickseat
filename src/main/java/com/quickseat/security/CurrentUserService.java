@@ -26,4 +26,15 @@ import org.springframework.stereotype.Service;
         if (!user.isEmailVerified()) throw new ForbiddenException("Email verification is required");
         return user;
     }
+
+    public User getActiveStaffWithCinema() {
+        AppUserDetails principal = getCurrentUser();
+        User user = userRepository.findById(principal.id())
+                .orElseThrow(() -> new UnauthorizedException("Authenticated user no longer exists"));
+        if (!user.isActive()) throw new UnauthorizedException("Staff account is disabled");
+        if (user.getRole() != Role.STAFF) throw new ForbiddenException("Staff access is required");
+        if (user.getCinema() == null) throw new ForbiddenException("Staff is not assigned to a cinema");
+        if (!user.getCinema().isActive()) throw new ForbiddenException("Assigned cinema is inactive");
+        return user;
+    }
 }

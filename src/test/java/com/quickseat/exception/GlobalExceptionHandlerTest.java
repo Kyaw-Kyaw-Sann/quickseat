@@ -6,6 +6,7 @@ import com.quickseat.dto.common.ApiErrorResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 class GlobalExceptionHandlerTest {
 
@@ -37,5 +38,43 @@ class GlobalExceptionHandlerTest {
         assertThat(body).isNotNull();
         assertThat(body.message()).isEqualTo("An unexpected server error occurred");
         assertThat(body.message()).doesNotContain("password");
+    }
+
+    @Test
+    void returnsClearBadRequestForOversizedUpload() {
+        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/v1/admin/cinemas/image");
+
+        var response = handler.handleMaxUploadSize(request);
+
+        ApiErrorResponse body = response.getBody();
+        assertThat(response.getStatusCode().value()).isEqualTo(400);
+        assertThat(body).isNotNull();
+        assertThat(body.error()).isEqualTo("FILE_TOO_LARGE");
+        assertThat(body.message()).isEqualTo("Uploaded file must not exceed 5 MB");
+    }
+
+    @Test
+    void keepsExistingPayloadTooLargeResponseForOtherUploads() {
+        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/v1/admin/movies/poster");
+
+        var response = handler.handleMaxUploadSize(request);
+
+        ApiErrorResponse body = response.getBody();
+        assertThat(response.getStatusCode().value()).isEqualTo(413);
+        assertThat(body).isNotNull();
+        assertThat(body.error()).isEqualTo("PAYLOAD_TOO_LARGE");
+    }
+
+    @Test
+    void returnsClearBadRequestForMissingFilePart() {
+        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/v1/admin/cinemas/image");
+
+        var response = handler.handleMissingRequestPart(new MissingServletRequestPartException("file"), request);
+
+        ApiErrorResponse body = response.getBody();
+        assertThat(response.getStatusCode().value()).isEqualTo(400);
+        assertThat(body).isNotNull();
+        assertThat(body.error()).isEqualTo("MISSING_REQUEST_PART");
+        assertThat(body.message()).isEqualTo("Missing required file part: file");
     }
 }

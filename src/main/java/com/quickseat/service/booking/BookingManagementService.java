@@ -7,15 +7,18 @@ import com.quickseat.dto.response.booking.BookingSeatResponse;
 import com.quickseat.entity.Booking;
 import com.quickseat.entity.BookingSeat;
 import com.quickseat.entity.ShowtimeSeat;
+import com.quickseat.entity.Ticket;
 import com.quickseat.entity.User;
 import com.quickseat.entity.enums.BookingStatus;
 import com.quickseat.entity.enums.SeatInventoryStatus;
+import com.quickseat.entity.enums.TicketStatus;
 import com.quickseat.exception.BadRequestException;
 import com.quickseat.exception.ConflictException;
 import com.quickseat.exception.ResourceNotFoundException;
 import com.quickseat.repository.BookingRepository;
 import com.quickseat.repository.BookingSeatRepository;
 import com.quickseat.repository.ShowtimeSeatRepository;
+import com.quickseat.repository.TicketRepository;
 import com.quickseat.security.CurrentUserService;
 import java.time.Clock;
 import java.time.Duration;
@@ -42,6 +45,7 @@ public class BookingManagementService {
     private final BookingRepository bookingRepository;
     private final BookingSeatRepository bookingSeatRepository;
     private final ShowtimeSeatRepository showtimeSeatRepository;
+    private final TicketRepository ticketRepository;
     private final CurrentUserService currentUserService;
     private final SeatHoldService seatHoldService;
     private final Clock clock;
@@ -90,7 +94,7 @@ public class BookingManagementService {
         return toResponse(booking, seats, now);
     }
 
-    @Transactional
+    @Transactional(noRollbackFor = ConflictException.class)
     public BookingResponse cancel(String bookingReference) {
         User customer = currentUserService.getVerifiedCustomer();
         Booking booking = getCustomerBooking(bookingReference, customer.getId());
@@ -102,6 +106,7 @@ public class BookingManagementService {
             cancelPendingBooking(booking, snapshots);
         } else if (booking.getStatus() == BookingStatus.CONFIRMED) {
             cancelConfirmedBooking(booking, snapshots, now);
+            cancelTicket(booking);
         } else {
             throw new ConflictException("Booking in " + booking.getStatus() + " status cannot be cancelled");
         }
@@ -110,6 +115,16 @@ public class BookingManagementService {
         booking.setCancelledAt(now);
         log.info("Customer cancelled booking {}", booking.getId());
         return toResponse(booking, snapshots, now);
+    }
+
+    private void cancelTicket(Booking booking) {
+        Ticket ticket = ticketRepository.findByBookingId(booking.getId()).orElse(null);
+        if (ticket != null) {
+            if (ticket.getStatus() == TicketStatus.USED) {
+                throw new ConflictException("Used ticket booking cannot be cancelled");
+            }
+            ticket.setStatus(TicketStatus.CANCELLED);
+        }
     }
 
     private void cancelPendingBooking(Booking booking, List<BookingSeat> snapshots) {
