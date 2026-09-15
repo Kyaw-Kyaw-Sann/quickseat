@@ -3,6 +3,7 @@ package com.quickseat.config;
 import com.quickseat.security.JwtAuthenticationFilter;
 import com.quickseat.security.RestAccessDeniedHandler;
 import com.quickseat.security.RestAuthenticationEntryPoint;
+import com.quickseat.security.GoogleOAuthFailureHandler;
 import com.quickseat.security.GoogleOAuthSuccessHandler;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
@@ -24,10 +25,11 @@ public class SecurityConfig {
     @Bean SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtFilter,
             RestAuthenticationEntryPoint entryPoint, RestAccessDeniedHandler deniedHandler,
             ObjectProvider<ClientRegistrationRepository> registrations,
-            GoogleOAuthSuccessHandler googleSuccessHandler) throws Exception {
+            GoogleOAuthSuccessHandler googleSuccessHandler,
+            GoogleOAuthFailureHandler googleFailureHandler) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(entryPoint).accessDeniedHandler(deniedHandler))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/health", "/swagger-ui/**", "/swagger-ui.html", "/api-docs/**", "/auth/**",
@@ -40,7 +42,9 @@ public class SecurityConfig {
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         if (registrations.getIfAvailable() != null) {
-            http.oauth2Login(oauth -> oauth.successHandler(googleSuccessHandler));
+            http.oauth2Login(oauth -> oauth
+                    .successHandler(googleSuccessHandler)
+                    .failureHandler(googleFailureHandler));
         }
         return http.build();
     }

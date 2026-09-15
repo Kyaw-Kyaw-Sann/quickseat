@@ -9,6 +9,7 @@ import com.quickseat.exception.BadRequestException;
 import com.quickseat.repository.PasswordResetOtpRepository;
 import com.quickseat.repository.UserRepository;
 import com.quickseat.service.shared.EmailService;
+import com.quickseat.service.shared.QuickSeatEmailTemplate;
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -36,8 +37,9 @@ public class PasswordRecoveryService {
             resetOtp.setAttemptCount(0);
             resetOtp.setVerified(false);
             otpRepository.save(resetOtp);
-            emailService.send(user.getEmail(), "QuickSeat password reset code",
-                    "Your QuickSeat password reset code is " + resetOtp.getOtp() + ". It expires in 10 minutes.");
+            emailService.sendHtml(user.getEmail(), "QuickSeat password reset code",
+                    "Your QuickSeat password reset code is " + resetOtp.getOtp() + ". It expires in 10 minutes.",
+                    QuickSeatEmailTemplate.passwordResetOtp(user.getName(), resetOtp.getOtp()));
         });
     }
 

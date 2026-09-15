@@ -19,6 +19,7 @@ import com.quickseat.repository.PaymentRepository;
 import com.quickseat.repository.TicketRepository;
 import com.quickseat.security.CurrentUserService;
 import com.quickseat.service.shared.EmailService;
+import com.quickseat.service.shared.QuickSeatEmailTemplate;
 import com.quickseat.service.shared.QrCodeService;
 import java.math.BigDecimal;
 import java.security.SecureRandom;
@@ -202,18 +203,21 @@ public class TicketService {
     private void sendConfirmationEmail(Ticket ticket, List<BookingSeat> seats, String recipient) {
         try {
             byte[] qrImage = qrCodeService.generatePng(buildQrContent(ticket.getTicketToken()));
-            emailService.sendWithAttachment(recipient, "QuickSeat booking confirmed",
-                    buildEmailBody(ticket.getBooking(), seats), "quickseat-ticket.png", qrImage, "image/png");
+            Booking booking = ticket.getBooking();
+            String plainText = buildEmailBody(booking, seats);
+            emailService.sendHtmlWithAttachment(recipient, "QuickSeat booking confirmed", plainText,
+                    QuickSeatEmailTemplate.bookingConfirmation(booking.getBookingReference(),
+                            booking.getShowtime().getMovie().getTitle(), booking.getShowtime().getScreen().getCinema().getName(),
+                            booking.getShowtime().getScreen().getName(), booking.getShowtime().getStartTime().toString(),
+                            seatLabels(seats), booking.getTotalAmount()),
+                    "quickseat-ticket.png", qrImage, "image/png");
         } catch (RuntimeException exception) {
             log.error("Booking confirmation email failed for booking {}", ticket.getBooking().getId(), exception);
         }
     }
 
     private String buildEmailBody(Booking booking, List<BookingSeat> seats) {
-        String seatLabels = seats.stream()
-                .map(seat -> seat.getSeat().getRowName() + seat.getSeat().getSeatNumber())
-                .reduce((first, second) -> first + ", " + second)
-                .orElse("-");
+        String seatLabels = seatLabels(seats);
         return """
                 Your QuickSeat booking is confirmed.
 
@@ -229,6 +233,13 @@ public class TicketService {
                 """.formatted(booking.getBookingReference(), booking.getShowtime().getMovie().getTitle(),
                 booking.getShowtime().getScreen().getCinema().getName(), booking.getShowtime().getScreen().getName(),
                 booking.getShowtime().getStartTime(), seatLabels, booking.getTotalAmount().toPlainString());
+    }
+
+    private String seatLabels(List<BookingSeat> seats) {
+        return seats.stream()
+                .map(seat -> seat.getSeat().getRowName() + seat.getSeat().getSeatNumber())
+                .reduce((first, second) -> first + ", " + second)
+                .orElse("-");
     }
 
     private TicketResponse toResponse(Ticket ticket, List<BookingSeat> seats, boolean alreadyGenerated) {

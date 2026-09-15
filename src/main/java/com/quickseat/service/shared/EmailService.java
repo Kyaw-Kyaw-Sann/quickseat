@@ -54,4 +54,44 @@ public class EmailService {
             throw new MailSendException("Could not prepare email attachment", exception);
         }
     }
+
+    public void sendHtml(String recipient, String subject, String plainText, String html) {
+        if (!mailEnabled) {
+            log.info("Email delivery skipped because MAIL_ENABLED is false");
+            return;
+        }
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, false, "UTF-8");
+            helper.setFrom(fromAddress);
+            helper.setTo(recipient);
+            helper.setSubject(subject);
+            helper.setText(plainText, html);
+            mailSender.send(message);
+            log.info("HTML email notification sent successfully");
+        } catch (MessagingException exception) {
+            throw new MailSendException("Could not prepare email", exception);
+        }
+    }
+
+    public void sendHtmlWithAttachment(String recipient, String subject, String plainText, String html,
+                                       String fileName, byte[] content, String contentType) {
+        if (!mailEnabled) {
+            log.info("Email delivery skipped because MAIL_ENABLED is false");
+            return;
+        }
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom(fromAddress);
+            helper.setTo(recipient);
+            helper.setSubject(subject);
+            helper.setText(plainText, html);
+            helper.addAttachment(fileName, new ByteArrayResource(content), contentType);
+            mailSender.send(message);
+            log.info("HTML email notification with attachment sent successfully");
+        } catch (MessagingException exception) {
+            throw new MailSendException("Could not prepare email attachment", exception);
+        }
+    }
 }

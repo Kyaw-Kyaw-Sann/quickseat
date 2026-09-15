@@ -6,6 +6,7 @@ import com.quickseat.exception.BadRequestException;
 import com.quickseat.repository.EmailVerificationTokenRepository;
 import com.quickseat.repository.UserRepository;
 import com.quickseat.service.shared.EmailService;
+import com.quickseat.service.shared.QuickSeatEmailTemplate;
 import java.security.SecureRandom;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -38,8 +39,9 @@ public class EmailVerificationService {
         String separator = verificationBaseUrl.contains("?") ? "&" : "?";
         String link = verificationBaseUrl + separator + "token="
                 + URLEncoder.encode(token.getToken(), StandardCharsets.UTF_8);
-        emailService.send(user.getEmail(), "Verify your QuickSeat email",
-                "Welcome to QuickSeat. Verify your email using this link:\n" + link + "\nThis link expires in 24 hours.");
+        emailService.sendHtml(user.getEmail(), "Verify your QuickSeat email",
+                "Welcome to QuickSeat. Verify your email using this link: " + link + ". This link expires in 24 hours.",
+                QuickSeatEmailTemplate.verification(user.getName(), link));
     }
 
     @Transactional
